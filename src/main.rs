@@ -2,7 +2,7 @@ use std::io;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::fs::File;
-
+use std::thread;
 
 
 
@@ -49,7 +49,33 @@ pub fn get_respond(mut stream : TcpStream, req: HTTP_REQ){
 
 pub fn post_respond(mut stream : TcpStream, req: HTTP_REQ){
 	println!("POST!");
+	get_respond(stream, req);
 }
+
+pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>){
+	match stream {
+		Ok(mut stream) => {
+		    let mut buffer = [0; 1024];
+		    let buff = stream.read(&mut buffer).unwrap();
+		    let request = std::str::from_utf8(&buffer).unwrap();
+		    println!("{}",  request);
+
+		    let req_components = request.split(" ");
+		    let mut split_req = vec![];
+		    for comp in req_components{
+		    	split_req.push(comp);
+		    }
+		    let req = HTTP_REQ::new(split_req[0].to_owned(), (split_req[1].to_owned()));
+		    match(req.method.as_ref()){
+		        "GET"=>get_respond(stream, req),
+		        "POST"=> post_respond(stream, req),
+		    	_=>println!("oops")
+		  	}        	
+		}
+		Err(e) => { println!("Failure") }
+	}
+}
+
 
 /**
 *Runs the server, opensa tcp channel and then responds to HTTP Requests
@@ -60,30 +86,11 @@ pub fn server(){
 
 	let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
 
-	// accept connections and process them serially
+	// accept connections and process them paralell
 	for stream in listener.incoming() {
-	    match stream {
-	        Ok(mut stream) => {
-	        	let mut buffer = [0; 512];
-	        	let buff = stream.read(&mut buffer).unwrap();
-	        	let request = std::str::from_utf8(&buffer).unwrap();
-	        	println!("{}",  request);
-
-	        	let req_components = request.split(" ");
-	        	let mut split_req = vec![];
-	        	for comp in req_components{
-	        		split_req.push(comp);
-	        	}
-	        	let req = HTTP_REQ::new(split_req[0].to_owned(), (split_req[1].to_owned()));
-	        	match(req.method.as_ref()){
-	        		"GET"=>get_respond(stream, req),
-	        		"POST"=> post_respond(stream, req),
-	        		_=>println!("oops")
-	        	}
-	        	
-	        }
-	        Err(e) => { println!("Failure") }
-	    }
+		thread::spawn(||{    
+		    client_handle(stream);
+		});
 	}
 
 }
