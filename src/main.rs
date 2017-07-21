@@ -21,20 +21,27 @@ impl HTTP_REQ{
 		for comp in req_components{
 			split_req.push(comp);
 		}
-
+		let _method = String::from(split_req[0]);
+		let _file = String::from(split_req[1]);
 
 		let mut dot : String = ".".to_owned();
 		dot.push_str(split_req[1]);
-
-		let _method = String::from(split_req[0]);
-
-
 		match split_req[0].as_ref(){
 			"GET"=>{
+				let req_query = HTTP_REQ::parse_get_req(_file);
+				let mut get_params = None;
+				if req_query.len() > 1{
+					get_params = Some(HTTP_REQ::parse_variables(
+						String::from(req_query[1].clone())
+						)
+					);
+				}
+				dot = ".".to_owned();
+				dot.push_str(&req_query[0]);
 				HTTP_REQ{
 					method: _method,
 					file: dot,
-					params: None,
+					params: get_params,
 				}
 			},
 			"POST"=>{
@@ -74,6 +81,15 @@ impl HTTP_REQ{
 			println!("{} : {}", variable, value);
 		}
 		return mappy;
+	}
+
+	pub fn parse_get_req(query: String)->Vec<String>{
+		let splitter = query.split("?");
+		let mut split_query = vec![];
+		for i in splitter{
+			split_query.push(String::from(i));
+		}
+		return split_query;
 	}
 }
 
