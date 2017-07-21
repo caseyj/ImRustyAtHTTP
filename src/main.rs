@@ -3,22 +3,77 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::fs::File;
 use std::thread;
+use std::collections::HashMap;
+
 
 
 
 pub struct HTTP_REQ{
 	pub method: String,
 	pub file: String,
+	pub params : Option<HashMap<String,String>>,
 }
 
 impl HTTP_REQ{
-	pub fn new(_method: String, _file: String)->HTTP_REQ{
-		let mut dot : String = ".".to_owned();
-		dot.push_str(&_file);
-		HTTP_REQ{
-			method: _method,
-			file: dot,
+	pub fn new(request: String)->HTTP_REQ{
+		let req_components = request.split_whitespace();
+		let mut split_req = vec![];
+		for comp in req_components{
+			split_req.push(comp);
 		}
+
+
+		let mut dot : String = ".".to_owned();
+		dot.push_str(split_req[1]);
+
+		let _method = String::from(split_req[0]);
+
+
+		match split_req[0].as_ref(){
+			"GET"=>{
+				HTTP_REQ{
+					method: _method,
+					file: dot,
+					params: None,
+				}
+			},
+			"POST"=>{
+				HTTP_REQ{
+					method: _method,
+					file: dot,
+					params: Some(HTTP_REQ::parse_variables(
+						String::from(split_req[split_req.len()-1])
+							)
+						),
+				}	
+			},
+			_=>{
+				HTTP_REQ{
+					method: _method,
+					file: String::from("./index.html"),
+					params: None,	
+				}
+			}
+		}
+	}
+
+	pub fn parse_variables(vars : String)->HashMap<String, String>{
+		let var_components = vars.split("&");
+		let mut mappy = HashMap::new();
+		for i in var_components{
+			let tstring = String::from(i);
+			let var_comp = tstring.split("=");
+			let mut strangs = vec![];
+			for k in var_comp{
+				println!("variable component {}", k);
+				strangs.push(k);
+			}
+			mappy.insert(String::from(strangs[0]), String::from(strangs[1]));
+		}
+		for (variable, value) in &mappy{
+			println!("{} : {}", variable, value);
+		}
+		return mappy;
 	}
 }
 
@@ -60,13 +115,9 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>){
 		    let request = std::str::from_utf8(&buffer).unwrap();
 		    println!("{}",  request);
 
-		    let req_components = request.split(" ");
-		    let mut split_req = vec![];
-		    for comp in req_components{
-		    	split_req.push(comp);
-		    }
-		    let req = HTTP_REQ::new(split_req[0].to_owned(), (split_req[1].to_owned()));
-		    match(req.method.as_ref()){
+		    
+		    let req = HTTP_REQ::new(String::from(request));
+		    match req.method.as_ref() {
 		        "GET"=>get_respond(stream, req),
 		        "POST"=> post_respond(stream, req),
 		    	_=>println!("oops")
