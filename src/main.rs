@@ -22,6 +22,7 @@ impl HTTP_REQ{
 	}
 }
 
+
 /**
 *Responds to the HTTP request sent with either a document or 404 error if document not found
 *Will be expanded for POST
@@ -29,7 +30,7 @@ impl HTTP_REQ{
 *
 *
 */
-pub fn respond(mut stream : TcpStream, req: HTTP_REQ){
+pub fn get_respond(mut stream : TcpStream, req: HTTP_REQ){
 	let mut serve = String::new();
 	let mut writer : String;
 	match File::open(req.file){
@@ -46,7 +47,9 @@ pub fn respond(mut stream : TcpStream, req: HTTP_REQ){
 	stream.write(writer.as_bytes());
 }
 
-
+pub fn post_respond(mut stream : TcpStream, req: HTTP_REQ){
+	println!("POST!");
+}
 
 /**
 *Runs the server, opensa tcp channel and then responds to HTTP Requests
@@ -71,7 +74,13 @@ pub fn server(){
 	        	for comp in req_components{
 	        		split_req.push(comp);
 	        	}
-	        	respond(stream, HTTP_REQ::new(split_req[0].to_owned(), (split_req[1].to_owned())));	
+	        	let req = HTTP_REQ::new(split_req[0].to_owned(), (split_req[1].to_owned()));
+	        	match(req.method.as_ref()){
+	        		"GET"=>get_respond(stream, req),
+	        		"POST"=> post_respond(stream, req),
+	        		_=>println!("oops")
+	        	}
+	        	
 	        }
 	        Err(e) => { println!("Failure") }
 	    }
