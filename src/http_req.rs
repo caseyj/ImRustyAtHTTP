@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use http_mapper::Mapper;
 
 
+#[derive(Clone)]
 #[allow(dead_code)]
 pub struct HTTPRequest{
 	accept: Option<String>,

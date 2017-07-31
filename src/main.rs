@@ -25,6 +25,10 @@ impl HTTP_REQ{
 		let iter_lines = request.lines();
 		for i in iter_lines{
 			println!("NL: {}", i);
+			let split_colon = i.split(": ");
+			for h in split_colon{
+				println!("SPLIT COLON: {}", h);
+			}
 		}
 
 
@@ -135,7 +139,7 @@ pub fn post_respond(mut stream : TcpStream, req: HTTP_REQ){
 	get_respond(stream, req);
 }
 
-pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>){
+pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, serv: SERVER){
 	match stream {
 		Ok(mut stream) => {
 		    let mut buffer = [0; 1024];
@@ -154,8 +158,9 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>){
 		Err(e) => { println!("Failure") }
 	}
 }
-#[derive(Copy, RustcDecodable, RustcEncodable,Clone)]
+
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct SERVER{
 	http_mapping: Mapper,
 }
@@ -203,6 +208,7 @@ impl SERVER{
 			http_mapping: mapping
 		}
 	}
+
 }
 
 
@@ -214,11 +220,12 @@ impl SERVER{
 pub fn server(){
 
 	let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
-
+	let serv = SERVER::new();
 	// accept connections and process them paralell
 	for stream in listener.incoming() {
-		thread::spawn(||{    
-		    client_handle(stream);
+		let tserv = serv.clone();
+		thread::spawn(move ||{    
+		    client_handle(stream, tserv);
 		});
 	}
 
