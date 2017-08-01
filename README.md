@@ -18,8 +18,8 @@ on what my limits of imagination allow.
 * Capture parameters passed by a GET request
 * Capture parameters passed by a POST request
 
-##Goals for what comes next:
-###Some of these interest me as bonus challenges
+## Goals for what comes next:
+### Some of these interest me as bonus challenges
 * Implement features of HTTP I have yet to consider, such as adhering to some browser requests
 * Building a channel to pass parsed HTTP requests to processing rather than copying the server
 * Building a means for a framework interaction with the server
