@@ -109,10 +109,13 @@ impl HTTP_REQ{
 *
 *
 */
-pub fn get_respond(mut stream : TcpStream, req: HTTP_REQ){
+pub fn get_respond(mut stream : TcpStream, req: HTTPRequest){
 	let mut serve = String::new();
 	let mut writer : String;
-	match File::open(req.file){
+	println!("getting: {}", req.get_file().unwrap());
+	let dot= ".".to_owned() + &req.get_file().unwrap();
+	//dot += &req.get_file().unwrap();
+	match File::open(dot){
 		Ok(mut f)=>{
 				f.read_to_string(&mut serve).unwrap();
 				writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
@@ -126,7 +129,7 @@ pub fn get_respond(mut stream : TcpStream, req: HTTP_REQ){
 	stream.write(writer.as_bytes());
 }
 
-pub fn post_respond(mut stream : TcpStream, req: HTTP_REQ){
+pub fn post_respond(mut stream : TcpStream, req: HTTPRequest){
 	println!("POST!");
 	get_respond(stream, req);
 }
@@ -142,9 +145,9 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, serv: 
 			println!("{:?}", req_);
 		    
 		    let req = HTTP_REQ::new(String::from(request));
-		    match req.method.as_ref() {
-		        "GET"=>get_respond(stream, req),
-		        "POST"=> post_respond(stream, req),
+		    match req_.get_method().unwrap().as_ref() {
+		        "get"=>get_respond(stream, req_),
+		        "post"=> post_respond(stream, req_),
 		    	_=>println!("oops")
 		  	}        	
 		}

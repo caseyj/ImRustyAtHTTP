@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
 use http_mapper::Mapper;
 
