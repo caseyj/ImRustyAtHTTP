@@ -26,3 +26,4 @@ on what my limits of imagination allow.
 * The above involves allowing for a "registration function" which would allow a user to map their own function to a request parameter
 * Implement more features of HTTP which require better logic than what I use (actually doing more than 404/200 responses)
 * Create a means by which a person using this server could create security logic, some sort of universal is allowed function.
+* Utilizing Rust's channels and safe multithreading to handle request and response behavior, and using this to eventually close defunct threads.
