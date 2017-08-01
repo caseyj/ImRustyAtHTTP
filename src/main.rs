@@ -137,14 +137,13 @@ pub fn post_respond(mut stream : TcpStream, req: HTTPRequest){
 pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, serv: SERVER){
 	match stream {
 		Ok(mut stream) => {
-		    let mut buffer = [0; 1024];
-		    let buff = stream.read(&mut buffer).unwrap();
+		    let mut buffer = vec![];
+		    stream.read_to_end(&mut buffer).unwrap();
 		    let request = std::str::from_utf8(&buffer).unwrap();
 
 			let req_ = serv.parse_request(request.to_string());
 			println!("{:?}", req_);
-		    
-		    let req = HTTP_REQ::new(String::from(request));
+
 		    match req_.get_method().unwrap().as_ref() {
 		        "get"=>get_respond(stream, req_),
 		        "post"=> post_respond(stream, req_),
