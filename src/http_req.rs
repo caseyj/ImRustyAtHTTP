@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use http_mapper::Mapper;
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct HTTPRequest{
 	accept: Option<String>,
@@ -41,6 +41,7 @@ pub struct HTTPRequest{
 	warning: Option<String>,
 	method: Option<String>,
 	parameters: Option<HashMap<String,String>>,
+	file: Option<String>,
 }
 
 /*
@@ -85,6 +86,7 @@ impl HTTPRequest{
 			warning: None,
 			method: None,
 			parameters: None,
+			file: None,
 		}
 	}
 	pub fn set_accept(&mut self, msg:String){
@@ -192,6 +194,9 @@ impl HTTPRequest{
 	pub fn set_parameters(&mut self, msg:HashMap<String,String>){
 		self.parameters = Some(msg);
 	}
+	pub fn set_file(&mut self, msg:String){
+		self.file = Some(msg);
+	}
 	pub fn get_accept(&self)->Option<String>{
 		return self.accept.clone();
 	}
@@ -288,24 +293,30 @@ impl HTTPRequest{
 	pub fn get_parameters(&self)->Option<HashMap<String,String>>{
 		return self.parameters.clone();
 	}
+	pub fn get_file(&self)->Option<String>{
+		return self.file.clone();
+	}
 
 }
 
 pub fn parse_variables(vars : String)->HashMap<String, String>{
-	let var_components = vars.split("&");
+	let mut var_components = vars.split("&");
 	let mut mappy = HashMap::new();
-	for i in var_components{
-		let tstring = String::from(i);
-		let var_comp = tstring.split("=");
-		let mut strangs = vec![];
-		for k in var_comp{
-			println!("variable component {}", k);
-			strangs.push(k);
+	if var_components.count() > 1{
+		let mut var_components = vars.split("&");
+		for i in var_components{
+			let tstring = String::from(i);
+			let var_comp = tstring.split("=");
+			let mut strangs = vec![];
+			for k in var_comp{
+				println!("variable component {}", k);
+				strangs.push(k);
+			}
+			mappy.insert(String::from(strangs[0]), String::from(strangs[1].trim()));
 		}
-		mappy.insert(String::from(strangs[0]), String::from(strangs[1]));
-	}
-	for (variable, value) in &mappy{
-		println!("{} : {}", variable, value);
+		for (variable, value) in &mappy{
+			println!("{} : {}", variable, value);
+		}
 	}
 	return mappy;
 }

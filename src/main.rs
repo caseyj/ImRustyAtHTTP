@@ -8,7 +8,7 @@ use std::fs::File;
 use std::thread;
 use std::collections::HashMap;
 
-use http_req::HTTPRequest;
+use http_req::{HTTPRequest, parse_get_req, parse_variables};
 use http_mapper::Mapper;
 
 
@@ -22,15 +22,6 @@ pub struct HTTP_REQ{
 
 impl HTTP_REQ{
 	pub fn new(request: String)->HTTP_REQ{
-		let iter_lines = request.lines();
-		for i in iter_lines{
-			println!("NL: {}", i);
-			let split_colon = i.split(": ");
-			for h in split_colon{
-				println!("SPLIT COLON: {}", h);
-			}
-		}
-
 
 		let req_components = request.split_whitespace();
 		let mut split_req = vec![];
@@ -145,8 +136,9 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, serv: 
 		    let mut buffer = [0; 1024];
 		    let buff = stream.read(&mut buffer).unwrap();
 		    let request = std::str::from_utf8(&buffer).unwrap();
-		    println!("{}",  request);
 
+			let req_ = serv.parse_request(request.to_string());
+			println!("{:?}", req_);
 		    
 		    let req = HTTP_REQ::new(String::from(request));
 		    match req.method.as_ref() {
@@ -207,6 +199,75 @@ impl SERVER{
 		SERVER{
 			http_mapping: mapping
 		}
+	}
+	/*
+	*parses a request given to the server into an HTTP Request object
+	*/
+	pub fn parse_request(self, request: String)->HTTPRequest{
+		//lets start with an empty request object
+		let mut new_req = HTTPRequest::new();
+		//get the lines from the request and iterate over them
+		let iter_lines = request.lines();
+		for i in iter_lines{
+			//split on colon and get the count and reset it into an iterator since it has been consumed
+			let mut split_colon = i.split(": ");
+			let count_colon_split = split_colon.count();
+			let mut split_colon = i.split(": ");
+			//match to number of sides of the iterator
+			match count_colon_split{
+				1=>{
+					//this is typically the first or last line depending on the type of request so we figure that out
+					let mut first_line_split = i.split(" ");
+					if first_line_split.count() > 1{
+						//this is the first line and contains info in the following format:
+						//METHOD FILE[?PARAMETERS] HTTP VERSION
+						let mut first_line_split = i.split(" ");
+						//the method is the first thing seen
+						new_req.set_method(first_line_split.nth(0).unwrap().to_lowercase());
+						//the file is the second
+						new_req.set_file(first_line_split.nth(0).unwrap().to_lowercase());
+						//if it is a get request we better check it for parameters and split that up
+						match new_req.get_method().unwrap().as_ref() {
+							"get" =>{
+								//parse for get parameters
+								let get_split = parse_get_req(new_req.get_file().unwrap());
+								//if its greater than 1 in size there are get parameters and we must set those
+								if get_split.len() > 1{
+									new_req.set_parameters(parse_variables(get_split[1].clone().to_string()));
+									new_req.set_file(get_split[0].clone());
+								}
+							},
+							_=>{ 
+								println!("No get test") 
+							}
+						}
+					}
+					else{
+						//we assume these are post parameters and set them as such
+						if new_req.get_method().unwrap()!="get".to_string(){
+							new_req.set_parameters(parse_variables(i.to_string()));
+						}
+					}
+				},
+				2=>{
+					println!("{}", i);
+					if self.http_mapping.mapping.contains_key(&split_colon.nth(0).unwrap().to_lowercase()){
+						let mut split_colon = i.split(": ");
+						//println!("key supposed to be: {}", &split_colon.nth(0).unwrap().to_lowercase());
+						let fnct = self.http_mapping.mapping[&split_colon.nth(0).unwrap().to_lowercase()].fnct;
+						fnct(&mut new_req,split_colon.nth(0).unwrap().to_lowercase());
+					}
+					else{
+						println!("key not found: {}", &split_colon.nth(0).unwrap().to_lowercase())
+					}
+				},
+				3=>{
+					println!("Something went wrong in request parsing soooooo");
+				}
+				_=> println!("Something went wrong in request parsing soooooo")
+			}
+		}
+		return new_req;
 	}
 
 }

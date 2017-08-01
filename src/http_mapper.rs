@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use http_req::HTTPRequest;
 
-
 pub struct FunctWrap{
 	pub fnct: fn(&mut HTTPRequest, String)
 }
