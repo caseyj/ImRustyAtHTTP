@@ -50,7 +50,7 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, serv: 
 		    let mut buffer = [0; 1024];
 		    let buff = stream.read(&mut buffer).unwrap();
 		    let request = std::str::from_utf8(&buffer).unwrap();
-
+			
 			let req_ = serv.parse_request(request.to_string());
 			println!("{:?}", req_);
 		    match req_.get_method().unwrap().as_ref() {

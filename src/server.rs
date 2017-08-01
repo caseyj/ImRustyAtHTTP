@@ -54,10 +54,16 @@ impl SERVER{
 	*parses a request given to the server into an HTTP Request object
 	*/
 	pub fn parse_request(self, request: String)->HTTPRequest{
+        let mut req_str = String::from("");
+        for i in request.chars(){
+            if i != '\u{0}'{
+                req_str+=&i.to_string();
+            }
+        }
 		//lets start with an empty request object
 		let mut new_req = HTTPRequest::new();
 		//get the lines from the request and iterate over them
-		let iter_lines = request.lines();
+		let iter_lines = req_str.lines();
 		for i in iter_lines{
 			//split on colon and get the count and reset it into an iterator since it has been consumed
 			let mut split_colon = i.split(": ");
