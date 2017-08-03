@@ -1,5 +1,54 @@
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
 use http_mapper::Mapper;
+use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc;
+use std::thread;
+use std::io::prelude::*;
+use std::net::{TcpStream};
+use std::fs::File;
+use stream_message::StreamMessage;
+
+
+/**
+*Responds to the HTTP request sent with either a document or 404 error if document not found
+*Will be expanded for POST
+*
+*
+*
+*/
+pub fn get_respond(mut stream : TcpStream, req: HTTPRequest){
+	let mut serve = String::new();
+	let mut writer : String;
+	println!("getting: {}", req.get_file().unwrap());
+	let dot= ".".to_owned() + &req.get_file().unwrap();
+	//dot += &req.get_file().unwrap();
+	match File::open(dot){
+		Ok(mut f)=>{
+				f.read_to_string(&mut serve).unwrap();
+				writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
+				writer.push_str(&serve);
+			},
+		Err(e)=>{
+			//I assume 404 for now
+			writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned()
+		}
+	}
+	stream.write(writer.as_bytes());
+}
+
+pub fn post_respond(mut stream : TcpStream, req: HTTPRequest){
+	println!("POST!");
+	get_respond(stream, req);
+}
+
+pub fn respond_to_request(mut stream : TcpStream, req_: HTTPRequest){
+    println!("{:?}", req_);
+	match req_.get_method().unwrap().as_ref() {
+		"get"=>get_respond(stream, req_),
+		"post"=> post_respond(stream, req_),
+		_=>println!("oops")
+	}
+}
 
 #[allow(dead_code)]
 #[derive(Clone)]
@@ -53,7 +102,7 @@ impl SERVER{
 	/*
 	*parses a request given to the server into an HTTP Request object
 	*/
-	pub fn parse_request(self, request: String)->HTTPRequest{
+	pub fn parse_request(&self, request: String)->HTTPRequest{
         let mut req_str = String::from("");
         for i in request.chars(){
             if i != '\u{0}'{
@@ -125,5 +174,21 @@ impl SERVER{
 		}
 		return new_req;
 	}
+
+    /*
+    *Runs the actual logic from a recieved request and formats for future processing
+    *
+    *
+    */
+    pub fn run(&self, recieve_stringx: Receiver<StreamMessage>){
+        loop{
+            let msg = recieve_stringx.recv().unwrap();
+            
+            let req_ = self.parse_request(msg.message);
+            
+			respond_to_request(msg.stream, req_);
+			
+        }
+    }
 
 }
