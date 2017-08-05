@@ -5,7 +5,7 @@ A basic HTTP Server in Rust to play a bit with the language and server concepts
 ## Intention:
 I found an interesting post on Reddit: https://www.reddit.com/r/dailyprogrammer/comments/6lti17/20170707_challenge_322_hard_static_http_server/ and I immediately began hacking away at the problem. The more I implemented, the more I found to explore and decided to take this opportunity 
 to see not only how far I could go but what I could comparably implement against some of the most popular HTTP Server frameworks out there.
-I dont see this as a competitor to the likes of Flask, Springboot, or Servo, but absolutely see this as a personal and professional challenge on what my limits of imagination allow. 
+I dont see this as a competitor to the likes of Flask or Springboot, but absolutely see this as a personal and professional challenge on what my limits of imagination allow. 
 
 ## What I have already done:
 ### So far I have implemented the following features:
