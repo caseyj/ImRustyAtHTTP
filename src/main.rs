@@ -2,6 +2,7 @@ mod http_req;
 mod http_mapper;
 mod server;
 mod stream_message;
+mod router;
 
 use std::io::Error;
 use std::io::prelude::*;
