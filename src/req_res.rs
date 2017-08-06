@@ -4,7 +4,7 @@ use std::sync::mpsc::{Receiver};
 use std::io::prelude::*;
 use std::net::{TcpStream};
 use stream_message::StreamMessage;
-use router::{HttpResponse, Router};
+use router::{ Router};
 use file_responder::file_finder;
 
 
