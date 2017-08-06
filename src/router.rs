@@ -41,7 +41,15 @@ impl RouteFunct{
     }
 }
 
+impl Clone for RouteFunct{
+	fn clone(&self)->RouteFunct{
+		RouteFunct{
+			rt_fnct: self.rt_fnct
+		}
+	}
+}
 
+#[derive(Clone)]
 pub struct Router{
     pub rt_funct : HashMap<String, RouteFunct>,
 }

@@ -62,6 +62,15 @@ impl ReqResEngine{
 		}
 	}
 
+	pub fn set_post_routes(&mut self, routes: Router){
+		self.post_routes = routes;
+	}
+
+	pub fn set_get_routes(&mut self, routes: Router){
+		self.get_routes = routes;
+	}
+
+	/*
 	pub fn register_post_route(&mut self, route: String, route_function: fn(HTTPRequest)->HttpResponse){
 		self.post_routes.register_route(route, route_function)
 	}
@@ -69,6 +78,7 @@ impl ReqResEngine{
 	pub fn register_get_route(&mut self, route: String, route_function: fn(HTTPRequest)->HttpResponse){
 		self.get_routes.register_route(route, route_function)
 	}
+	*/
 
 	/*
 	*parses a request given to the server into an HTTP Request object
