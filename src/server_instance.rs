@@ -1,6 +1,6 @@
 use std;
 use std::io::prelude::*;
-use std::net::{TcpListener, TcpStream};
+use std::net::{TcpListener};
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc;
 use std::thread;
@@ -36,7 +36,7 @@ pub fn client_handle(stream: Result<std::net::TcpStream>, send_stringx: Sender<S
 	}
 }
 
-
+#[allow(dead_code)]
 pub struct ServerInstance{
     
     pub tcp_listener: TcpListener,
