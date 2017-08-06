@@ -25,7 +25,7 @@ impl HttpResponse{
 
 impl fmt::Display for HttpResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} {} \n Content-Type: {} \n\n\n {}", self.version, self.response_code, self.content_type, self.content)
+        write!(f, "{} {} \n Content-Type: {} \n\n{}", self.version, self.response_code, self.content_type, self.content)
     }
 }
 
@@ -64,3 +64,4 @@ impl Router{
     }
 
 }
+

@@ -4,20 +4,42 @@ mod server;
 mod stream_message;
 mod router;
 
-use std::io::Error;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
-use std::fs::File;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::mpsc;
 use std::thread;
 use std::collections::HashMap;
+use std::fs::File;
+
 
 use stream_message::StreamMessage;
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
-use server::SERVER;
+use server::{SERVER, };
+use router::HttpResponse;
 
+pub fn slash(req: HTTPRequest)->HttpResponse{
+	let mut serve = String::new();
+	let mut writer : String;
+	let dot= ".".to_owned() + &req.get_file().unwrap() + "index.html";
+	let mut response: HttpResponse;
+	match File::open(dot){
+		Ok(mut f)=>{
+			f.read_to_string(&mut serve).unwrap();
+			//writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
+			//writer.push_str(&serve);
+			response = HttpResponse::new(serve, "200 OK".to_owned(), "text/html".to_owned());
+		},
+		Err(e)=>{
+			//I assume 404 for now
+			writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned();
+			response = HttpResponse::new("".to_owned(), "404 Not Found".to_owned(), "text/html".to_owned());
+		}
+	}
 
+	return response
+
+}
 
 pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, send_stringx: Sender<StreamMessage>)->bool{
 	let mut success = false;
@@ -52,7 +74,8 @@ pub fn client_handle(stream: Result<std::net::TcpStream, std::io::Error>, send_s
 pub fn server(){
 
 	let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
-	let serv = SERVER::new();
+	let mut serv = SERVER::new();
+	serv.register_get_route("/".to_owned() , slash);
 	let (send_stringx, recieve_stringx): (Sender<StreamMessage>, Receiver<StreamMessage>) = mpsc::channel();
 
 	thread::spawn(move || {

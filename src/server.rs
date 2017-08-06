@@ -7,53 +7,16 @@ use std::io::prelude::*;
 use std::net::{TcpStream};
 use std::fs::File;
 use stream_message::StreamMessage;
+use router::{HttpResponse, Router};
 
 
-/**
-*Responds to the HTTP request sent with either a document or 404 error if document not found
-*Will be expanded for POST
-*
-*
-*
-*/
-pub fn get_respond(mut stream : TcpStream, req: HTTPRequest){
-	let mut serve = String::new();
-	let mut writer : String;
-	println!("getting: {}", req.get_file().unwrap());
-	let dot= ".".to_owned() + &req.get_file().unwrap();
-	//dot += &req.get_file().unwrap();
-	match File::open(dot){
-		Ok(mut f)=>{
-				f.read_to_string(&mut serve).unwrap();
-				writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
-				writer.push_str(&serve);
-			},
-		Err(e)=>{
-			//I assume 404 for now
-			writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned()
-		}
-	}
-	stream.write(writer.as_bytes());
-}
 
-pub fn post_respond(mut stream : TcpStream, req: HTTPRequest){
-	println!("POST!");
-	get_respond(stream, req);
-}
-
-pub fn respond_to_request(mut stream : TcpStream, req_: HTTPRequest){
-    println!("{:?}", req_);
-	match req_.get_method().unwrap().as_ref() {
-		"get"=>get_respond(stream, req_),
-		"post"=> post_respond(stream, req_),
-		_=>println!("oops")
-	}
-}
 
 #[allow(dead_code)]
-#[derive(Clone)]
 pub struct SERVER{
 	http_mapping: Mapper,
+	post_routes: Router,
+	get_routes: Router
 }
 
 impl SERVER{
@@ -96,9 +59,20 @@ impl SERVER{
 		mapping.add_mapping("Via".to_lowercase(), HTTPRequest::set_connection);
 		mapping.add_mapping("Warning".to_lowercase(), HTTPRequest::set_warning);
 		SERVER{
-			http_mapping: mapping
+			http_mapping: mapping,
+			post_routes: Router::new(),
+			get_routes: Router::new(),
 		}
 	}
+
+	pub fn register_post_route(&mut self, route: String, route_function: fn(HTTPRequest)->HttpResponse){
+		self.post_routes.register_route(route, route_function)
+	}
+
+	pub fn register_get_route(&mut self, route: String, route_function: fn(HTTPRequest)->HttpResponse){
+		self.get_routes.register_route(route, route_function)
+	}
+
 	/*
 	*parses a request given to the server into an HTTP Request object
 	*/
@@ -175,6 +149,53 @@ impl SERVER{
 		return new_req;
 	}
 
+	/**
+	*Responds to the HTTP request sent with either a document or 404 error if document not found
+	*Will be expanded for POST
+	*
+	*
+	*
+	*/
+	pub fn get_respond(&self, mut stream : TcpStream, req: HTTPRequest){
+		let mut serve = String::new();
+		let mut writer : String;
+		println!("getting: {}", req.get_file().unwrap());
+		if self.get_routes.rt_funct.contains_key(&req.get_file().unwrap()){
+			let funct = self.get_routes.rt_funct[&req.get_file().unwrap()].rt_fnct;
+			stream.write(funct(req).to_string().as_bytes());
+		}
+		else{
+			let dot= ".".to_owned() + &req.get_file().unwrap();
+			//dot += &req.get_file().unwrap();
+			match File::open(dot){
+				Ok(mut f)=>{
+						f.read_to_string(&mut serve).unwrap();
+						writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
+						writer.push_str(&serve);
+					},
+				Err(e)=>{
+					//I assume 404 for now
+					writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned()
+				}
+			}
+			stream.write(writer.as_bytes());
+		}
+	}
+
+	pub fn post_respond(&self ,mut stream : TcpStream, req: HTTPRequest){
+		println!("POST!");
+		self.get_respond(stream, req);
+	}
+
+	pub fn respond_to_request(&self ,mut stream : TcpStream, req_: HTTPRequest){
+		println!("{:?}", req_);
+		match req_.get_method().unwrap().as_ref() {
+			"get"=>self.get_respond(stream, req_),
+			"post"=> self.post_respond(stream, req_),
+			_=>println!("oops")
+		}
+	}
+
     /*
     *Runs the actual logic from a recieved request and formats for future processing
     *
@@ -186,7 +207,7 @@ impl SERVER{
             
             let req_ = self.parse_request(msg.message);
             
-			respond_to_request(msg.stream, req_);
+			self.respond_to_request(msg.stream, req_);
 			
         }
     }
