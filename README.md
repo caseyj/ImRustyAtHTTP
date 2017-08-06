@@ -18,12 +18,11 @@ I dont see this as a competitor to the likes of Flask or Springboot, but absolut
 * Capture parameters passed by a POST request
 * Utilizing Rust's channels and safe multithreading to handle request and response behavior.
 * Building a channel to pass parsed HTTP requests to processing rather than copying the server
+* Created a means for custom routing via the registration of a function that accepts only a request object and returns a response object
 
 ## Goals for what comes next:
 ### Some of these interest me as bonus challenges
 * Implement features of HTTP I have yet to consider, such as adhering to some browser requests
-* Building a means for a framework interaction with the server
-* The above involves allowing for a "registration function" which would allow a user to map their own function to a request parameter
 * Implement more features of HTTP which require better logic than what I use (actually doing more than 404/200 responses)
-* Create a means by which a person using this server could create security logic, some sort of universal is allowed function.
+* Abstract away the need for an implementer of the server to allow them to return whatever type they like and to reformat their return values into a valid response object. 
 

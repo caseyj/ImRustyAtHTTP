@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use http_mapper::Mapper;
 
 
 #[derive(Clone, Debug)]
@@ -300,10 +299,10 @@ impl HTTPRequest{
 }
 
 pub fn parse_variables(vars : String)->HashMap<String, String>{
-	let mut var_components = vars.split("&");
+	let var_components = vars.split("&");
 	let mut mappy = HashMap::new();
 	if var_components.count() > 1{
-		let mut var_components = vars.split("&");
+		let var_components = vars.split("&");
 		for i in var_components{
 			let tstring = String::from(i);
 			let var_comp = tstring.split("=");
