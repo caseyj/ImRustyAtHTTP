@@ -3,6 +3,7 @@ mod http_mapper;
 mod server;
 mod stream_message;
 mod router;
+mod file_responder;
 
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
@@ -15,7 +16,7 @@ use std::fs::File;
 
 use stream_message::StreamMessage;
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
-use server::{SERVER, };
+use server::{SERVER};
 use router::HttpResponse;
 
 pub fn slash(req: HTTPRequest)->HttpResponse{
@@ -26,8 +27,6 @@ pub fn slash(req: HTTPRequest)->HttpResponse{
 	match File::open(dot){
 		Ok(mut f)=>{
 			f.read_to_string(&mut serve).unwrap();
-			//writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
-			//writer.push_str(&serve);
 			response = HttpResponse::new(serve, "200 OK".to_owned(), "text/html".to_owned());
 		},
 		Err(e)=>{

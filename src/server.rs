@@ -8,7 +8,7 @@ use std::net::{TcpStream};
 use std::fs::File;
 use stream_message::StreamMessage;
 use router::{HttpResponse, Router};
-
+use file_responder::file_finder;
 
 
 
@@ -165,20 +165,8 @@ impl SERVER{
 			stream.write(funct(req).to_string().as_bytes());
 		}
 		else{
-			let dot= ".".to_owned() + &req.get_file().unwrap();
-			//dot += &req.get_file().unwrap();
-			match File::open(dot){
-				Ok(mut f)=>{
-						f.read_to_string(&mut serve).unwrap();
-						writer = "HTTP/1.0 200 OK\nContent-type: text/html\n\n\n".to_owned();
-						writer.push_str(&serve);
-					},
-				Err(e)=>{
-					//I assume 404 for now
-					writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned()
-				}
-			}
-			stream.write(writer.as_bytes());
+			let resp = file_finder(req);
+			stream.write(resp.to_string().as_bytes());
 		}
 	}
 
