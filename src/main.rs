@@ -18,25 +18,11 @@ use stream_message::StreamMessage;
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
 use server::{SERVER};
 use router::HttpResponse;
+use file_responder::{specific_file_finder};
+
 
 pub fn slash(req: HTTPRequest)->HttpResponse{
-	let mut serve = String::new();
-	let mut writer : String;
-	let dot= ".".to_owned() + &req.get_file().unwrap() + "index.html";
-	let mut response: HttpResponse;
-	match File::open(dot){
-		Ok(mut f)=>{
-			f.read_to_string(&mut serve).unwrap();
-			response = HttpResponse::new(serve, "200 OK".to_owned(), "text/html".to_owned());
-		},
-		Err(e)=>{
-			//I assume 404 for now
-			writer = "HTTP/1.0 404 OK\nContent-type: text/html\n\n\n".to_owned();
-			response = HttpResponse::new("".to_owned(), "404 Not Found".to_owned(), "text/html".to_owned());
-		}
-	}
-
-	return response
+	return specific_file_finder("/index.html".to_owned());
 
 }
 

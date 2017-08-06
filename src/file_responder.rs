@@ -5,8 +5,12 @@ use std::io::Read;
 
 
 pub fn file_finder(request: HTTPRequest)->HttpResponse{
+    return specific_file_finder(request.get_file().unwrap());
+}
+
+pub fn specific_file_finder(fileName: String)->HttpResponse{
     let mut serve = String::new();
-    let dot= ".".to_owned() + &request.get_file().unwrap();
+    let dot= ".".to_owned() + &fileName;
     let mut response: HttpResponse;
 	match File::open(dot){
 		Ok(mut f)=>{
