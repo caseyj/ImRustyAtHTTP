@@ -1,11 +1,8 @@
 use http_req::{HTTPRequest, parse_get_req, parse_variables};
 use http_mapper::Mapper;
-use std::sync::mpsc::{Sender, Receiver};
-use std::sync::mpsc;
-use std::thread;
+use std::sync::mpsc::{Receiver};
 use std::io::prelude::*;
 use std::net::{TcpStream};
-use std::fs::File;
 use stream_message::StreamMessage;
 use router::{HttpResponse, Router};
 use file_responder::file_finder;
@@ -13,14 +10,14 @@ use file_responder::file_finder;
 
 
 #[allow(dead_code)]
-pub struct SERVER{
+pub struct ReqResEngine{
 	http_mapping: Mapper,
 	post_routes: Router,
 	get_routes: Router
 }
 
-impl SERVER{
-	pub fn new()->SERVER{
+impl ReqResEngine{
+	pub fn new()->ReqResEngine{
 
 		let mut mapping = Mapper::new();
 		mapping.add_mapping("accept".to_lowercase(), HTTPRequest::set_accept);
@@ -58,7 +55,7 @@ impl SERVER{
 		mapping.add_mapping("Upgrade".to_lowercase(), HTTPRequest::set_upgrade);
 		mapping.add_mapping("Via".to_lowercase(), HTTPRequest::set_connection);
 		mapping.add_mapping("Warning".to_lowercase(), HTTPRequest::set_warning);
-		SERVER{
+		ReqResEngine{
 			http_mapping: mapping,
 			post_routes: Router::new(),
 			get_routes: Router::new(),
@@ -89,14 +86,14 @@ impl SERVER{
 		let iter_lines = req_str.lines();
 		for i in iter_lines{
 			//split on colon and get the count and reset it into an iterator since it has been consumed
-			let mut split_colon = i.split(": ");
+			let split_colon = i.split(": ");
 			let count_colon_split = split_colon.count();
 			let mut split_colon = i.split(": ");
 			//match to number of sides of the iterator
 			match count_colon_split{
 				1=>{
 					//this is typically the first or last line depending on the type of request so we figure that out
-					let mut first_line_split = i.split(" ");
+					let first_line_split = i.split(" ");
 					if first_line_split.count() > 1{
 						//this is the first line and contains info in the following format:
 						//METHOD FILE[?PARAMETERS] HTTP VERSION
@@ -157,25 +154,29 @@ impl SERVER{
 	*
 	*/
 	pub fn get_respond(&self, mut stream : TcpStream, req: HTTPRequest){
-		let mut serve = String::new();
-		let mut writer : String;
 		println!("getting: {}", req.get_file().unwrap());
 		if self.get_routes.rt_funct.contains_key(&req.get_file().unwrap()){
-			let funct = self.get_routes.rt_funct[&req.get_file().unwrap()].rt_fnct;
-			stream.write(funct(req).to_string().as_bytes());
+			
+			match stream.write(self.get_routes.run_route(req.get_file().unwrap(), req).to_string().as_bytes()){
+				Ok(size)=> println!("Wrote File of size {}", size),
+				Err(e)=> println!("Something went wrong {}", e)
+			}
 		}
 		else{
-			let resp = file_finder(req);
-			stream.write(resp.to_string().as_bytes());
+			
+			match stream.write(file_finder(req).to_string().as_bytes()){
+				Ok(size)=> println!("Wrote File of size {}", size),
+				Err(e)=> println!("Something went wrong {}", e)
+			}
 		}
 	}
 
-	pub fn post_respond(&self ,mut stream : TcpStream, req: HTTPRequest){
+	pub fn post_respond(&self ,stream : TcpStream, req: HTTPRequest){
 		println!("POST!");
 		self.get_respond(stream, req);
 	}
 
-	pub fn respond_to_request(&self ,mut stream : TcpStream, req_: HTTPRequest){
+	pub fn respond_to_request(&self, stream : TcpStream, req_: HTTPRequest){
 		println!("{:?}", req_);
 		match req_.get_method().unwrap().as_ref() {
 			"get"=>self.get_respond(stream, req_),

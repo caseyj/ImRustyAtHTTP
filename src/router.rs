@@ -29,13 +29,13 @@ impl fmt::Display for HttpResponse {
     }
 }
 
-pub struct route_fnct{
+pub struct RouteFunct{
     pub rt_fnct : fn(HTTPRequest)->HttpResponse,
 }
 
-impl route_fnct{
-    pub fn new( funct:  fn(HTTPRequest)->HttpResponse)->route_fnct{
-        route_fnct{
+impl RouteFunct{
+    pub fn new( funct:  fn(HTTPRequest)->HttpResponse)->RouteFunct{
+        RouteFunct{
             rt_fnct: funct
         }
     }
@@ -43,19 +43,18 @@ impl route_fnct{
 
 
 pub struct Router{
-    pub rt_funct : HashMap<String, route_fnct>,
+    pub rt_funct : HashMap<String, RouteFunct>,
 }
 
 impl Router{
     pub fn new()->Router{
-        let mut hsh = HashMap::new();
         Router{
-            rt_funct: hsh,
+            rt_funct: HashMap::new(),
         }
     }
 
     pub fn register_route(&mut self, route: String, funct: fn(HTTPRequest)->HttpResponse){
-        self.rt_funct.insert(route, route_fnct::new(funct));
+        self.rt_funct.insert(route, RouteFunct::new(funct));
     }
 
     pub fn run_route(&self, route: String, request: HTTPRequest)->HttpResponse{
