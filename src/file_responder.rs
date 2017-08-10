@@ -10,7 +10,7 @@ pub fn file_finder(request: HTTPRequest)->HttpResponse{
 
 pub fn specific_file_finder(file_name: String)->HttpResponse{
     let mut serve = String::new();
-    let dot= ".".to_owned() + &file_name;
+    let dot= "./webby/".to_owned() + &file_name;
     let response: HttpResponse;
 	match File::open(dot){
 		Ok(mut f)=>{
