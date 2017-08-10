@@ -4,3 +4,8 @@ version = "0.1.0"
 authors = ["JohnBCasey <caseyjohnb@gmail.com>"]
 
 [dependencies]
+
+[lib]
+name="RecklessService"
+path="src/lib.rs"
+crate-type=["rlib"]
