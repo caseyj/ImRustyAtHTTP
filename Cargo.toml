@@ -6,11 +6,6 @@ authors = ["JohnBCasey <caseyjohnb@gmail.com>"]
 [dependencies]
 
 [lib]
-<<<<<<< HEAD
 name="reckless_service"
 path="lib/lib.rs"
-=======
-name="RecklessService"
-path="src/lib.rs"
->>>>>>> 7b1f7861eef581e226c98da70b2969c6a4cf9e4b
 crate-type=["rlib"]

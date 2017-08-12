@@ -111,7 +111,7 @@ impl ReqResEngine{
 						//the method is the first thing seen
 						new_req.set_method(first_line_split.nth(0).unwrap().to_lowercase());
 						//the file is the second
-						new_req.set_file(first_line_split.nth(0).unwrap().to_lowercase());
+						new_req.set_file(first_line_split.nth(0).unwrap().to_owned());
 						//if it is a get request we better check it for parameters and split that up
 						match new_req.get_method().unwrap().as_ref() {
 							"get" =>{

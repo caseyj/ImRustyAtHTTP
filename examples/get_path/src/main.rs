@@ -14,6 +14,6 @@ fn main() {
             specific_file_finder("index.html".to_owned())
     }
 
-    si.register_get_route("/helloworld".to_owned(), helloWorld);
+    si.register_get_route("/helloWorld".to_owned(), helloWorld);
     si.run_server()
 }
