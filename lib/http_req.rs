@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use file_responder::specific_file_finder;
+use router::HttpResponse;
 
 
 #[derive(Clone, Debug)]
@@ -41,6 +43,7 @@ pub struct HTTPRequest{
 	method: Option<String>,
 	parameters: Option<HashMap<String,String>>,
 	file: Option<String>,
+	static_loc: String,
 }
 
 /*
@@ -86,8 +89,21 @@ impl HTTPRequest{
 			method: None,
 			parameters: None,
 			file: None,
+			static_loc: "./webby/".to_owned(),
 		}
 	}
+
+	pub fn file_responder(&self, file_name: String)->HttpResponse{
+		return specific_file_finder(file_name, self.static_loc.clone());
+	}
+
+	pub fn set_static_loc(&mut self, static_: String){
+		self.static_loc = static_;
+	}
+	pub fn get_static_loc(self)->String{
+		return self.static_loc
+	}
+
 	pub fn set_accept(&mut self, msg:String){
 		self.accept = Some(msg);
 	}

@@ -10,12 +10,11 @@ use req_res::ReqResEngine;
 use stream_message::StreamMessage;
 use http_req::{HTTPRequest};
 use router::{Router,HttpResponse};
-use file_responder::{specific_file_finder};
 
 
 pub fn slash(req: HTTPRequest)->HttpResponse{
 	println!("Default mapping of the {} route to index.html", req.get_file().unwrap());
-	return specific_file_finder("/index.html".to_owned());
+	return req.file_responder("/index.html".to_owned());
 }
 
 
@@ -42,10 +41,11 @@ pub struct ServerInstance{
     pub tcp_listener: TcpListener,
     pub registered_gets: Router,
     pub registered_posts: Router,
+    pub static_loc: String,
 }
 
 impl ServerInstance{
-    pub fn new(run_loc: String)->ServerInstance{
+    pub fn new(run_loc: String, statics: String)->ServerInstance{
         let listener = TcpListener::bind(run_loc).unwrap();
         let mut gets = Router::new();
         let mut posts = Router::new();
@@ -56,6 +56,7 @@ impl ServerInstance{
             tcp_listener: listener,
             registered_gets: gets,
             registered_posts: posts,
+            static_loc: statics,
         }
     }
 
@@ -71,6 +72,9 @@ impl ServerInstance{
         let mut engine =  ReqResEngine::new();
         engine.set_get_routes(self.registered_gets.clone());
         engine.set_post_routes(self.registered_posts.clone());
+        engine.set_static_loc(self.static_loc.clone());
+
+
 
         thread::spawn(move || {engine.run(recieve_stringx)});
         // accept connections and process them paralell
