@@ -1,0 +1,8 @@
+[package]
+name = "basic_server"
+authors = ["JohnBCasey <caseyjohnb@gmail.com>"]
+version = "0.0.0"
+
+[dependencies]
+reckless_service = { path = "../../" }
+
