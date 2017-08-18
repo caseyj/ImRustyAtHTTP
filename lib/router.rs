@@ -67,6 +67,7 @@ impl Router{
 
     pub fn run_route(&self, route: String, request: HTTPRequest)->HttpResponse{
         let fnct = self.rt_funct[&route].rt_fnct;
+
         return fnct(request);
     }
 

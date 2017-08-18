@@ -3,14 +3,13 @@ use router::HttpResponse;
 use std::fs::File;
 use std::io::Read;
 
-
 pub fn file_finder(request: HTTPRequest)->HttpResponse{
-    return specific_file_finder(request.get_file().unwrap());
+    return specific_file_finder(request.get_file().unwrap(), request.get_static_loc());
 }
 
-pub fn specific_file_finder(file_name: String)->HttpResponse{
+pub fn specific_file_finder(file_name: String, statics_: String)->HttpResponse{
     let mut serve = String::new();
-    let dot= "./webby/".to_owned() + &file_name;
+    let dot= statics_ + &file_name;
     let response: HttpResponse;
 	match File::open(dot){
 		Ok(mut f)=>{

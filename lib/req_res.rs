@@ -13,7 +13,8 @@ use file_responder::file_finder;
 pub struct ReqResEngine{
 	http_mapping: Mapper,
 	post_routes: Router,
-	get_routes: Router
+	get_routes: Router,
+	static_loc: String
 }
 
 impl ReqResEngine{
@@ -59,7 +60,12 @@ impl ReqResEngine{
 			http_mapping: mapping,
 			post_routes: Router::new(),
 			get_routes: Router::new(),
+			static_loc: "./webby/".to_owned()
 		}
+	}
+
+	pub fn set_static_loc(&mut self, static_: String){
+		self.static_loc = static_;
 	}
 
 	pub fn set_post_routes(&mut self, routes: Router){
@@ -153,6 +159,7 @@ impl ReqResEngine{
 				_=> println!("Something went wrong in request parsing soooooo")
 			}
 		}
+		new_req.set_static_loc(self.static_loc.clone());
 		return new_req;
 	}
 
