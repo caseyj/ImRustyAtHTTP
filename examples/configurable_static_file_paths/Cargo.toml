@@ -1,8 +1,7 @@
 [package]
-name = "configurable_paths"
+name = "get_path"
 authors = ["JohnBCasey <caseyjohnb@gmail.com>"]
 version = "0.0.0"
 
 [dependencies]
 reckless_service = { path = "../../" }
-
